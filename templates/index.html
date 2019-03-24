@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+
+    <title>Flack</title>
+  </head>
+  <body>
+    <div class="channels">
+      <div class="channelsHeading">
+        <div class="channelsHeadingText">
+          Channels
+        </div>
+      </div>
+      <div class="channel">
+        <div class="channelName">
+          Name 1
+        </div>
+      </div>
+      <div class="channel">
+        <div class="channelName">
+          Name 2
+        </div>
+      </div>
+      <div class="channel">
+        <div class="channelName">
+          Name 3
+        </div>
+      </div>
+      <div class="channel">
+        <div class="channelName">
+          Name 8
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <form id="form">
+        <input type="text" id="channel" value="">
+        <input type="submit" value="Create Channel">
+      <form>
+      <button id="btn">Enter</button>
+    </div>
+
+  </body>
+</html>
