@@ -21,3 +21,13 @@ def test():
     #     "hobbie": "tennis"
     # }
     return jsonify({"success": True, "channel": data})
+
+@app.route("/test1/<string:abc>", methods=["POST"])
+def test1():
+
+
+    # obj = {
+    #     "name": "data",
+    #     "hobbie": "tennis"
+    # }
+    return jsonify({"success": True, "channel": abc})
