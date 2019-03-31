@@ -5,30 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="/static/style.css">
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.1.1/handlebars.js"></script>
     <script src="{{ url_for('static', filename='index.js') }}"></script>
 
     <title>Flack</title>
   </head>
   <body>
-    <div class="channels">
-      <div class="channelsHeading">
-        <div class="channelsHeadingText">
-          Channels
+
+    <!-- Display name -->
+    <div class="overlay"></div>
+    <div class="displayName">
+      <div class="displayNameContainer">
+        <div class="displayNameTitle">
+          Display Name
+        </div>
+        <form id="displayNameForm">
+          <input id="displayNameInput" type="text" name="" value="" autocomplete="off">
+          <button id="displayNameButton">Submit</button>
+        </form>
+        <div class="errorMsg displayNameError"></div>
+      </div>
+    </div>
+
+    <!-- Page -->
+    <div class="container">
+
+      <!-- Sidebar -->
+      <div class="sideBar">
+        <div class="channelsHeading">
+          <div id="name"></div>
+        </div>
+
+        <!-- Channel creation -->
+        <form id="newChannelForm">
+          <input id="newChannelInput" type="text" id="" value="" autocomplete="off">
+          <button id="newChannelButton">Create Channel</button>
+        </form>
+        <div class="newChannelNotification"></div>
+
+        <div class="channels">
+          {% for channel in channels %}
+            <div class="channel"><div class="channelName">{{ channel }}</div></div>
+          {% endfor %}
+        </div>
+
+        <div class="sideBarFooter"></div>
+      </div>
+
+      <!-- Chat -->
+      <div class="content">
+        <div class="chat">
+          <div id="channelName"></div>
+          <div id="chat">
+            <button data-greeting="hi">hi</button>
+            <button data-greeting="hello">hello</button>
+            <div class="message">
+              <div class="messageDetails">
+                <div class="messageName">alex</div>
+                <div class="messageTime">18/08/91</div>
+              </div>
+              <div class="messageBubbleContainer">
+                <div class="messageBubble">This is an example message<br>lol</div>
+              </div>
+            </div>
+            <div class="message">
+              <div class="messageDetails yourMessageDetails">
+                <div class="messageName">alex</div>
+                <div class="messageTime">18/08/91</div>
+              </div>
+              <div class="messageBubbleContainer yourMessage">
+                <div class="messageBubble">This is an example message<br>lol</div>
+              </div>
+            </div>
+          </div>
+          <div class="sendMessage">
+            <form id="messageForm">
+              <input id="messageInput" type="text" name="" value="" autocomplete="off">
+              <button id="messageButton">Send</button>
+            </form>
+          </div>
         </div>
       </div>
-      <div class="channel"><div class="channelName">test1</div></div>
-      <div class="channel"><div class="channelName">Name 2</div></div>
-      <div class="channel"><div class="channelName">Name 3</div></div>
-      <div class="channel"><div class="channelName">Name 8</div></div>
     </div>
-
-    <div class="container">
-      <form id="form">
-        <input type="text" id="channel" value="">
-        <input type="submit" value="Create Channel">
-      <form>
-      <button id="btn">Enter</button>
-    </div>
-
   </body>
 </html>

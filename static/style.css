@@ -1,16 +1,102 @@
-body {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  font-family: sans-serif;
+/* width */
+::-webkit-scrollbar {
+  width: 3px;
+}
+/* Track */
+::-webkit-scrollbar-track {
+  background: black;
+}
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: white;
+}
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #6dffc7;
 }
 
-.channels {
-  position: absolute;
-  width: 300px;
-  background: #ab1d1d;
-  border-right: 2px solid lightgrey;
+body, html {
+  margin: 0;
+  padding: 0;
   height: 100%;
+  font-family: monospace;
+  background: #69ffab21;
+}
+
+input:focus, button:focus {
+  outline: none;
+}
+
+.overlay {
+  position: absolute;
+  z-index: 9;
+  width: 100%;
+  height: 100%;
+  background: black;
+  opacity: 0.8;
+}
+.displayName {
+  position: absolute;
+  z-index: 99;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.displayNameContainer {
+  text-align: center;
+  width: 250px;
+}
+.displayNameTitle {
+  color: white;
+  font-weight: bold;
+}
+.displayName input {
+  border-radius: 50px;
+  background: white;
+  border: none;
+  width: calc(100% - 30px);
+  margin: 20px 0px;
+  padding: 15px;
+  text-align: center;
+  color: #45ffab;
+}
+.displayName input:focus {
+  color: black;
+  background: #45ffab;
+  box-shadow: 1px 3px 10px #191919;
+}
+#displayNameButton {
+  background: white;
+  border-radius: 50px;
+  border: none;
+  padding: 5px 10px;
+  font-size: 0.7em;
+  margin-bottom: 20px;
+}
+#displayNameButton:focus {
+  background: white;
+  color: black;
+}
+.errorMsg {
+  color: red;
+}
+
+.content {
+  width: calc(100% - 250px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sideBar {
+  position: relative;
+  width: 250px;
+  background: #000000;
+  height: 100%;
+  box-shadow: 0px 0px 10px 4px grey;
+  border-radius: 0px 20px 20px 0px;
 }
 
 .channelsHeading {
@@ -20,40 +106,189 @@ body {
   width: 100%;
   height: 100px;
   box-shadow: -2px 4px 12px black;
+  border-radius: 0px 20px;
 }
 
-.channelsHeadingText {
-  color: orange;
-  font-size: 1.2em;
+#name {
+  color: #6dffc7;
+  font-size: 2em;
+  text-transform: uppercase;
+}
+
+.channels {
+  width: 100%;
+  height: calc(100% - 225px);
+  overflow-x: scroll;
 }
 
 .channel {
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 100%;
-  height: 80px;
-  box-shadow: -2px 2px 3px #ff8b38;
-  color: #e2ff00;
+  height: 50px;
+  color: #ffffff;
   cursor: pointer;
+  margin: 5px;
+  border-radius: 10px;
+  box-shadow: 0px 1px 3px #801414;
+  border: 3px solid #6dffc7;
+  justify-content: center;
 }
 .channel:hover {
-  background: yellow;
+  background: #6dffc7;
   color: black;
 }
 
 .channelName {
-  font-size: 1.5em;
-  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.sideBarFooter {
+    width: 100%;
+    height: 50px;
+    box-shadow: 0px -5px 8px -2px grey;
 }
 
 .container {
   width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+#newChannelButton {
+  background: #6dffc7;
+  font-weight: bold;
+  font-family: monospace;
+  border:  none;
+  border-radius: 0px 20px 20px 0px;
+  width: 33%;
+  border-left: 1px solid black;
+  font-size: 0.8em;
+}
+
+#newChannelForm {
+  display: flex;
+  margin: 10px;
+  width: calc(100% - 20px);
+  height: 30px;
+}
+#newChannelInput {
+  border:  none;
+  border-radius: 20px 0px 0px 20px;
+  width: 66%;
+  padding-left: 15px;
+}
+
+.chat {
+  width: 500px;
+  height: 500px;
+  background: black;
+  border-radius: 20px;
+  border: 3px solid #6dffc7;
+  box-shadow: 6px 6px 10px 0px grey;
+}
+
+#channelName {
+  background: black;
+  position: absolute;
+  transform: translate(-3px, -40px);
+  width: 150px;
+  height: 25px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border: 2px solid #6dffc7;
+  font-size: 0.8em;
+  box-shadow: 6px 6px 10px 0px grey;
+}
+
+.newChannelNotification {
+  height: 25px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0px 5px 8px -2px grey;
+}
+
+.newChannelSuccess {
+  color: white;
+}
+
+#chat {
+  color: white;
+  width: calc(100% - 60px);
+  height: calc(90% - 40px);
+  margin: 20px 20px 0;
+  overflow-x: scroll;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: inset 0px -5px 10px 0px grey;
+}
+
+.sendMessage {
+  width: 100%;
+  height: calc(10%);
   display: flex;
   justify-content: center;
 }
+#messageForm {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#messageInput {
+  padding: 5px;
+  width: 75%;
+  border-radius: 50px 0px 0px 50px;
+  border: none;
+}
+#messageButton {
+  border: none;
+  padding: 5px;
+  width: 60px;
+  border-radius: 0px 50px 50px 0px;
+  background: #6dffc7;
+  font-family: monospace;
+  font-weight: bold;
+  border-left: 1px solid black;
+}
 
-#btn {
-  background: red;
-  color: white;
+.message {
+  width: 100%;
+}
+.messageDetails {
+  height: 20px;
+  display: flex;
+  align-items: flex-end;
+  color: green;
+  margin-bottom: 1px;
+}
+.messageName {
+  margin-right: 10px;
+}
+.messageTime {
+  font-size: 0.8em;
+}
+.messageBubbleContainer {
+  width: 100%;
+}
+.messageBubble {
+  padding: 5px 15px 10px 15px;
+  box-shadow: inset 0px -3px 10px 5px grey;
+  border-radius: 0px 20px 20px 20px;
+  width: fit-content;
+  max-width: 100%;
+  word-break: break-all;
+}
+.yourMessageDetails {
+  justify-content: flex-end;
+}
+.yourMessage {
+  display: flex;
+  justify-content: flex-end;
+}
+.yourMessage .messageBubble {
+  border-radius: 20px 0px 20px 20px;
 }
