@@ -11,11 +11,11 @@ socketio = SocketIO(app)
 channels = [
     {"FreeForAll" : [
             { "name": "dan1",
-              "date": "18/08",
+              "time": "18/08",
               "msg": "Hey, how r u?"
             },
             { "name": "sarah1",
-              "date": "19/08",
+              "time": "19/08",
               "msg": "Hey, I'm great. u?",
             }
         ]
@@ -61,22 +61,24 @@ def test1(get):
 @app.route("/channel/<string:name>", methods=["GET"])
 def channel(name):
 
-    chat = ""
+    channelName = ""
     success = False
     messages = False
+    chat = []
 
     for channel in channels:
         for key in channel:
             if key == name:
-                chat = channel
+                channelName = channel
                 success = True
                 if channel[key]:
                     messages = True
+                    #chat.append
                 break
-        if chat:
+        if channelName:
             break
 
-    return jsonify({"success": success, "messages": messages, "chat": chat})
+    return jsonify({"success": success, "messages": messages, "chat": chat, "channel": channelName})
 
 # Create channel
 @app.route("/newChannel", methods=["POST"])
@@ -102,5 +104,17 @@ def newChannel():
 # messages
 @socketio.on("send message")
 def vote(data):
+
+    # Message details
     message = data["message"]
-    emit("announce message", {"message": message}, broadcast=True)
+    name = data["name"]
+    timeStamp = data["timeStamp"]
+    # channel name
+    channel = data["channel"]
+
+    for channel in channels:
+        for key in channel:
+            if key == channel:
+                key.append({"name": name, "time": timeStamp, "msg": message})
+
+    emit("announce message", {"message": message, "name": name, "timeStamp": timeStamp}, broadcast=True)

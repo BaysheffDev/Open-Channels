@@ -6,6 +6,12 @@ const yourMessageTemplate = Handlebars.compile( '<div class="messageDetails your
                                                 '<div class="messageBubbleContainer yourMessage">' +
                                                   '<div class="messageBubble">{{ message }}</div>' +
                                                 '</div>');
+const messageTemplate = Handlebars.compile( '<div class="messageDetails">' +
+                                                  '<div class="messageName">{{ name }}</div><div class="messageTime">{{ time }}</div>' +
+                                                '</div>' +
+                                                '<div class="messageBubbleContainer">' +
+                                                  '<div class="messageBubble">{{ message }}</div>' +
+                                                '</div>');
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -115,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.success) {
           // If channel has pre exisitng messages, display those
           if (data.messages) {
-            document.querySelector('#chat').innerHTML = data.chat[name][0].name;
+            document.querySelector('#chat').innerHTML = data.channel[name][0].name;
           }
           else {
             document.querySelector('#chat').innerHTML = "This is the beginning of the (" + name + ") channel!";
@@ -141,9 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on('connect', () => {
     document.querySelector('#messageForm').onsubmit= () => {
         const message = document.querySelector('#messageInput').value;
+        const name = localStorage.getItem("displayName");
+        const channel = document.querySelector('#channelName').innerHTML;
         document.querySelector('#messageInput').value = "";
         console.log(message);
-        socket.emit('send message', {'message': message});
+        socket.emit('send message', {'message': message, 'name': name, 'timeStamp': timeStamp(), "channel": channel});
         console.log("message sent");
         return false;
     }
@@ -153,7 +161,12 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("incomming message");
     const message = document.createElement('div');
     message.className = "message";
-    message.innerHTML = yourMessageTemplate({"name": "alex", "time": "180891", "message": data.message});
+    if (data.name === localStorage.getItem("displayName")) {
+      message.innerHTML = yourMessageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
+    }
+    else {
+      message.innerHTML = messageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
+    }
     console.log(message);
     document.querySelector('#chat').append(message);
   });
@@ -174,6 +187,16 @@ document.addEventListener('DOMContentLoaded', () => {
 //   };
 //   request.send();
 // }
+
+function timeStamp() {
+  const time = new Date();
+  const hour = time.getHours();
+  const minute = time.getMinutes();
+  const day = time.getDate();
+  const month = time.getMonth() + 1;
+  // const year = time.getFullYear();
+  return hour + ":" + minute + " " + day + "/" + month;
+}
 
 // Generate random colour
 function colour() {
