@@ -1,5 +1,5 @@
 // Handlebars templates
-const channelTemplate = Handlebars.compile("<div class='channel'><div class='channelName'>{{ channel }}</div></div>");
+const channelTemplate = Handlebars.compile("<div class='channel' onclick=channelClicked(this);><div class='channelName'>{{ channel }}</div></div>");
 const yourMessageTemplate = Handlebars.compile( '<div class="messageDetails yourMessageDetails">' +
                                                   '<div class="messageName">{{ name }}</div><div class="messageTime">{{ time }}</div>' +
                                                 '</div>' +
@@ -57,99 +57,56 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
   }
 
-  // Create new channel
-  document.querySelector('#newChannelForm').onsubmit = () => {
-    console.log("displayname submitted");
-    document.querySelector('#newChannelButton').style.background = colour();
-    const request = new XMLHttpRequest();
-    const name = document.getElementById("newChannelInput").value;
-    console.log("request opened, name: " + name);
-    request.open('POST', '/newChannel');
-    request.onload = () => {
-      console.log("new channel request loaded")
-      const data = JSON.parse(request.responseText);
-      console.log(data);
-      if (data.unique) {
-        console.log("unique new channel: " + name);
-
-        // Create new channel with Handelbars
-        const channel = channelTemplate({'channel': name});
-        const channelList = document.querySelector('.channels').innerHTML;
-        document.querySelector('.channels').innerHTML = channel + channelList;
-        // // Create new channel with vanilla JS
-        // const newChannel = document.createElement('div');
-        // newChannel.className = "channel";
-        // const channelName = document.createElement('div');
-        // channelName.className = "channelName";
-        // channelName.innerHTML = name;
-        // newChannel.appendChild(channelName);
-        // document.querySelector('.channels').prepend(newChannel);
-
-        // Display notification
-        const notification = document.querySelector('.newChannelNotification');
-        notification.innerHTML = "Created new channel";
-        notification.classList.remove("errorMsg");
-        notification.classList.add("newChannelSuccess");
-      }
-      else {
-        // Display notification
-        console.log("Channel name already exists!");
-        const notification = document.querySelector('.newChannelNotification');
-        notification.innerHTML = "Channel already exists";
-        notification.classList.remove("newChannelSuccess");
-        notification.classList.add("errorMsg");
-      }
-    }
-    const data = new FormData();
-    data.append("newChannel", name);
-
-    request.send(data);
-    return false;
-  }
-
-  // on click set chat to selected channel
-  document.querySelectorAll('.channel').forEach(channel => {
-    channel.onclick = () => {
-      // get clicked channel name
-      const name = channel.firstChild.innerHTML;
-      console.log(name);
-
-      const request = new XMLHttpRequest();
-      request.open('GET', `/channel/${name}`);
-      request.onload = () => {
-        const data = JSON.parse(request.responseText);
-        if (data.success) {
-          // If channel has pre exisitng messages, display those
-          if (data.messages) {
-            document.querySelector('#chat').innerHTML = data.channel[name][0].name;
-          }
-          else {
-            document.querySelector('#chat').innerHTML = "This is the beginning of the (" + name + ") channel!";
-          }
-          // highlight and set channel name to selected channel
-          document.querySelectorAll('.channel').forEach(channel => {
-            channel.style.background = "";
-          });
-          channel.style.background = "#6dffc7";
-          document.getElementById("channelName").innerHTML = name;
-          document.querySelector('body').style.background = colour();
-        }
-        else {
-          console.log("Request for channel failed");
-        }
-      }
-      request.send();
-    };
-  });
-
-  // Send message
+  // Socket io
   var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
   socket.on('connect', () => {
+    // Create new channel
+    document.querySelector('#newChannelForm').onsubmit = () => {
+      console.log("channel submitted");
+      document.querySelector('#newChannelButton').style.background = colour();
+      const name = document.getElementById("newChannelInput").value;
+      document.querySelector('#newChannelInput').value = "";
+      const request = new XMLHttpRequest();
+      request.open('POST', '/newChannel');
+      request.onload = () => {
+        const data = JSON.parse(request.responseText);
+        if (data.unique) {
+          // Display notification
+          const notification = document.querySelector('.newChannelNotification');
+          notification.innerHTML = "Created new channel";
+          notification.classList.remove("errorMsg");
+          notification.classList.add("newChannelSuccess");
+          console.log("unique new channel: " + name + ". Socket.io'ing...");
+          // Broadcast channel
+          socket.emit('create channel', {"channel": name});
+          console.log("channel broadcasted");
+        }
+        else {
+          // Display notification
+          console.log("Channel name already exists!");
+          const notification = document.querySelector('.newChannelNotification');
+          notification.innerHTML = "Channel already exists";
+          notification.classList.remove("newChannelSuccess");
+          notification.classList.add("errorMsg");
+        }
+      }
+      const data = new FormData();
+      data.append("newChannel", name);
+
+      request.send(data);
+      return false;
+    }
+
+    // Send message
     document.querySelector('#messageForm').onsubmit= () => {
-        const message = document.querySelector('#messageInput').value;
-        const name = localStorage.getItem("displayName");
         const channel = document.querySelector('#channelName').innerHTML;
+        if (channel === "Power Channel") {
+          console.log("You can't send messages in this channel, sorry.");
+          return false;
+        }
+        const message = document.querySelector('#messageInput').value;
         document.querySelector('#messageInput').value = "";
+        const name = localStorage.getItem("displayName");
         console.log(message);
         socket.emit('send message', {'message': message, 'name': name, 'timeStamp': timeStamp(), "channel": channel});
         console.log("message sent");
@@ -157,6 +114,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Receeve channel
+  socket.on("announce channel", data => {
+      console.log("incomming channel");
+      // Create new channel with Handelbars
+      const channel = channelTemplate({'channel': data.channel});
+      const channelList = document.querySelector('.channels').innerHTML;
+      document.querySelector('.channels').innerHTML = channel + channelList;
+  });
+
+  // Receive message
   socket.on('announce message', data => {
     console.log("incomming message");
     const message = document.createElement('div');
@@ -173,21 +140,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+// Actions when channel is clicked
+function channelClicked(channel) {
+  // get clicked channel name
+  const name = channel.firstChild.innerHTML;
+  console.log(name);
 
-// // change channel name
-// function channelName(name) {
-//   console.log("1");
-//   const request = new XMLHttpRequest();
-//   request.open('GET', `/test1/${name}`);
-//   console.log("2");
-//   request.onload = () => {
-//     console.log("3");
-//     const response = request.responseText;
-//     document.getElementById("channelName").innerHTML = response;
-//   };
-//   request.send();
-// }
+  const request = new XMLHttpRequest();
+  request.open('GET', `/channel/${name}`);
+  request.onload = () => {
+    const data = JSON.parse(request.responseText);
+    // get chat
+    const chatBox = document.querySelector('#chat');
+    console.log("channel clicked and response loaded");
+    if (data.success) {
+      chatBox.innerHTML = "This is the beginning of the (" + name + ") channel!";
+      // If channel has pre exisitng messages, display those
+      if (data.messages) {
+        for (let i = 0, len = data.chat.length; i < len; i++) {
+          console.log(data.chat.length);
+          if (data.chat[i].name === localStorage.getItem("displayName")) {
+            console.log(data.chat[i].name);
+            console.log(data.chat[i].time);
+            console.log(data.chat[i].msg);
+            chatBox.innerHTML += yourMessageTemplate({"name": data.chat[i].name, "time": data.chat[i].time, "message": data.chat[i].msg});
+          }
+          else {
+            chatBox.innerHTML += messageTemplate({"name": data.chat[i].name, "time": data.chat[i].time, "message": data.chat[i].msg});
+          }
+        }
+      }
+      else {
+        chatBox.innerHTML = "This is the beginning of the (" + name + ") channel!";
+      }
+      // Scroll to bottom of chat
+      chatBox.scrollTop = chatBox.scrollHeight;
 
+      // highlight and set channel name to selected channel
+      document.querySelectorAll('.channel').forEach(channel => {
+        channel.style.background = "";
+      });
+      channel.style.background = "#6dffc7";
+      document.getElementById("channelName").innerHTML = name;
+      document.querySelector('body').style.background = colour();
+    }
+    else {
+      console.log("Request for channel failed");
+    }
+  }
+  request.send();
+}
+
+// Timestamp
 function timeStamp() {
   const time = new Date();
   const hour = time.getHours();

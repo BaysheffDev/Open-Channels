@@ -47,7 +47,7 @@
 
         <div class="channels">
           {% for channel in channels %}
-            <div class="channel"><div class="channelName">{{ channel }}</div></div>
+            <div class="channel" onclick=channelClicked(this);><div class="channelName">{{ channel }}</div></div>
           {% endfor %}
         </div>
 
@@ -61,20 +61,11 @@
           <div id="chat">
             <div class="message">
               <div class="messageDetails">
-                <div class="messageName">alex</div>
-                <div class="messageTime">18/08/91</div>
+                <div class="messageName">BaysheffDev</div>
+                <div class="messageTime">17:30 02/04/2019</div>
               </div>
               <div class="messageBubbleContainer">
-                <div class="messageBubble">This is an example message<br>lol</div>
-              </div>
-            </div>
-            <div class="message">
-              <div class="messageDetails yourMessageDetails">
-                <div class="messageName">alex</div>
-                <div class="messageTime">18/08/91</div>
-              </div>
-              <div class="messageBubbleContainer yourMessage">
-                <div class="messageBubble">This is an example message<br>lol</div>
+                <div class="messageBubble">Click on "Power Channel"!</div>
               </div>
             </div>
           </div>

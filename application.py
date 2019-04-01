@@ -9,14 +9,21 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
 channels = [
-    {"FreeForAll" : [
-            { "name": "dan1",
-              "time": "18/08",
-              "msg": "Hey, how r u?"
+    {"Power Channel" : [
+            {
+            "name": "BaysheffDev",
+              "time": "17:30 02/04/2019",
+              "msg": "Hi, welcome to Power Channel."
             },
-            { "name": "sarah1",
-              "time": "19/08",
-              "msg": "Hey, I'm great. u?",
+            {
+            "name": "BaysheffDev",
+              "time": "17:30 02/04/2019",
+              "msg": "Create your own open channels to chat in, or chat in any channel of your choosing",
+            },
+            {
+              "name": "BaysheffDev",
+              "time": "17:30 02/04/2019",
+              "msg": "I built this over a weekend so don't try too hard to break my shit. Enjoy!",
             }
         ]
     }
@@ -28,7 +35,6 @@ names = []
 def index():
 
     channelList = []
-
     # get names of channels
     for channel in channels:
         for key in channel:
@@ -36,12 +42,15 @@ def index():
 
     return render_template("index.html", channels=channelList)
 
+@app.route("/data", methods=["GET"])
+def data():
+    return jsonify(channels)
+
 # display name
 @app.route("/displayname", methods=["POST"])
 def displayname():
 
     name = request.form.get('name')
-
     check = nameCheck(name, names)
 
     if check:
@@ -49,43 +58,34 @@ def displayname():
 
     return jsonify({"unique": check, "names": names})
 
-
-@app.route("/test1/<string:get>", methods=["GET"])
-def test1(get):
-
-    channelName = get
-
-    return channelName
-
 # Get channel
 @app.route("/channel/<string:name>", methods=["GET"])
 def channel(name):
 
-    channelName = ""
     success = False
     messages = False
-    chat = []
+    channelName = False
+    chat = ""
 
     for channel in channels:
-        for key in channel:
+        for key, value in channel.items():
             if key == name:
-                channelName = channel
+                channelName = name
                 success = True
                 if channel[key]:
                     messages = True
-                    #chat.append
+                    chat = value
                 break
         if channelName:
             break
 
-    return jsonify({"success": success, "messages": messages, "chat": chat, "channel": channelName})
+    return jsonify({"success": success, "messages": messages, "chat": chat})
 
 # Create channel
 @app.route("/newChannel", methods=["POST"])
 def newChannel():
 
     channelName = request.form.get("newChannel")
-
     check = True
     # check channel is unique
     for channel in channels:
@@ -95,26 +95,33 @@ def newChannel():
                 break
         if check == False:
             break
-
     if check == True:
         channels.insert(0, {channelName: []})
 
     return jsonify({"unique": check})
 
-# messages
+
+# Broadcast channel
+@socketio.on("create channel")
+def broadcastChannel(data):
+    # Channel name
+    name = data["channel"]
+    emit("announce channel", {"channel": name}, broadcast=True)
+
+# Broadcast messages
 @socketio.on("send message")
-def vote(data):
+def broadcastMessage(data):
 
     # Message details
     message = data["message"]
     name = data["name"]
     timeStamp = data["timeStamp"]
     # channel name
-    channel = data["channel"]
+    channelName = data["channel"]
 
     for channel in channels:
-        for key in channel:
-            if key == channel:
-                key.append({"name": name, "time": timeStamp, "msg": message})
+        for key, value in channel.items():
+            if key == channelName:
+                value.append({"name": name, "time": timeStamp, "msg": message})
 
     emit("announce message", {"message": message, "name": name, "timeStamp": timeStamp}, broadcast=True)
