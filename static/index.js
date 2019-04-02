@@ -21,13 +21,27 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.displayName').style.display = "none";
     // Set display name on side bar
     document.querySelector("#name").innerHTML = localStorage.getItem("displayName");
+    // Remember most recent channel
+    let recentChannel = localStorage.getItem("currentChannel");
+    if (recentChannel) {
+      getChannel(recentChannel);
+      // highlight and set channel name to recent channel
+      document.querySelectorAll('.channel').forEach(channel => {
+        channel.style.background = "";
+        if(channel.firstChild.innerHTML === recentChannel) {
+          channel.style.background = "#6dffc7";
+          document.getElementById("channelName").innerHTML = recentChannel;
+          document.querySelector('body').style.background = colour();
+        }
+      });
+    }
   }
-
-  // Highlight selected channel
-  document.querySelectorAll(".channel").innerHTML = localStorage.getItem("displayName");
 
   // form POST check new displayname
   document.querySelector('#displayNameForm').onsubmit = () => {
+    if (/\S/.test(document.querySelector('#displayNameInput').value) === false) {
+      return false;
+    }
     console.log("submitted");
     const request = new XMLHttpRequest();
     const name = document.getElementById("displayNameInput").value;
@@ -60,8 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Socket io
   var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
   socket.on('connect', () => {
+
     // Create new channel
     document.querySelector('#newChannelForm').onsubmit = () => {
+      if (/\S/.test(document.querySelector('#newChannelInput').value) === false) {
+        return false;
+      }
       console.log("channel submitted");
       document.querySelector('#newChannelButton').style.background = colour();
       const name = document.getElementById("newChannelInput").value;
@@ -99,6 +117,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Send message
     document.querySelector('#messageForm').onsubmit= () => {
+        if (/\S/.test(document.querySelector('#messageInput').value) === false) {
+          return false;
+        }
         const channel = document.querySelector('#channelName').innerHTML;
         if (channel === "Power Channel") {
           console.log("You can't send messages in this channel, sorry.");
@@ -114,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Receeve channel
+  // Receive channel
   socket.on("announce channel", data => {
       console.log("incomming channel");
       // Create new channel with Handelbars
@@ -143,9 +164,22 @@ document.addEventListener('DOMContentLoaded', () => {
 // Actions when channel is clicked
 function channelClicked(channel) {
   // get clicked channel name
-  const name = channel.firstChild.innerHTML;
+  let name = channel.firstChild.innerHTML;
   console.log(name);
+  getChannel(name);
+  // highlight and set channel name to selected channel
+  document.querySelectorAll('.channel').forEach(channel => {
+    channel.style.background = "";
+  });
+  channel.style.background = "#6dffc7";
+  document.getElementById("channelName").innerHTML = name;
+  document.querySelector('body').style.background = colour();
+}
 
+// Get channel
+function getChannel(channelName) {
+  const name = channelName;
+  localStorage.setItem("currentChannel", name);
   const request = new XMLHttpRequest();
   request.open('GET', `/channel/${name}`);
   request.onload = () => {
@@ -158,7 +192,7 @@ function channelClicked(channel) {
       // If channel has pre exisitng messages, display those
       if (data.messages) {
         for (let i = 0, len = data.chat.length; i < len; i++) {
-          console.log(data.chat.length);
+          console.log("chat length: " + data.chat.length);
           if (data.chat[i].name === localStorage.getItem("displayName")) {
             console.log(data.chat[i].name);
             console.log(data.chat[i].time);
@@ -175,14 +209,7 @@ function channelClicked(channel) {
       }
       // Scroll to bottom of chat
       chatBox.scrollTop = chatBox.scrollHeight;
-
-      // highlight and set channel name to selected channel
-      document.querySelectorAll('.channel').forEach(channel => {
-        channel.style.background = "";
-      });
-      channel.style.background = "#6dffc7";
-      document.getElementById("channelName").innerHTML = name;
-      document.querySelector('body').style.background = colour();
+      console.log("return true");
     }
     else {
       console.log("Request for channel failed");
@@ -208,5 +235,31 @@ function colour() {
   let y = Math.floor(Math.random() * 256);
   let z = Math.floor(Math.random() * 256);
   let col = "rgb(" + x + "," + y + "," + z + ")";
+  return col;
+}
+
+// Generate random colour at particular brightness level
+function messageColour () {
+  let rgb = [0,0,0];
+  let brightness = 150;
+  let a = Math.floor(Math.random() * 3);
+  let b = Math.floor(Math.random() * 2);
+  let c = true;
+  if (b >= 1) {
+    c = false;
+  }
+  rgb[a] = brightness;
+  for (let i = 0; i < 3; i++) {
+    if (rgb[i] === 0) {
+      if (c) {
+        rgb[i] = Math.floor(Math.random() * brightness);
+        break;
+      }
+      else {
+        c = true;
+      }
+    }
+  }
+  let col = "rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")";
   return col;
 }
