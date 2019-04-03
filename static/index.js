@@ -1,7 +1,7 @@
 // Handlebars templates
 const channelTemplate = Handlebars.compile('<div class="channel" onclick=channelClicked(this);>' +
-                                            '<div class="messageNotification"></div>' +
-                                            '<div id="{{ channelId }}" class="channelName">{{ channel }}</div></div>');
+                                            '<div id="notifications{{ channelId }}" class="messageNotification"></div>' +
+                                            '<div class="channelName">{{ channel }}</div></div>');
 const yourMessageTemplate = Handlebars.compile( '<div class="messageDetails yourMessageDetails">' +
                                                   '<div class="messageName">{{ name }}</div><div class="messageTime">{{ time }}</div>' +
                                                 '</div>' +
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('#messageInput').value = "";
         const name = localStorage.getItem("displayName");
         console.log(message);
-        socket.emit('send message', {'message': message, 'name': name, 'timeStamp': timeStamp(), "channel": channel});
+        socket.emit('send message', {'message': message, 'name': name, 'timeStamp': timeStamp(), "channel": 'jd'});
         console.log("message sent");
         return false;
     }
@@ -142,8 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Receive channel
   socket.on("announce channel", data => {
       console.log("incomming channel");
+      const name = data.channel;
+      const stripped = name.replace(/\s/g, '');
       // Create new channel with Handelbars
-      const channel = channelTemplate({'channelId': "id" + data.channel + "Notification",'channel': data.channel});
+      const channel = channelTemplate({'channelId': stripped,'channel': data.channel});
       const channelList = document.querySelector('.channels').innerHTML;
       document.querySelector('.channels').innerHTML = channel + channelList;
   });
@@ -171,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     else {
       console.log("after false");
-      const notification = document.querySelector('#' + currentChannel + "Notification");
+      const notification = document.querySelector('#notifications' + currentChannel);
       notification.style.display = "flex";
       notification.innerHTML ++;
     }
@@ -183,10 +185,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function channelClicked(channel) {
   // get clicked channel name
   let name = channel.querySelector('.channelName').innerHTML;
-  const notification = document.querySelector('#' + name + "Notification");
-  notification.style.display = "none";
-  notification.innerHTML === 0;
   console.log(name);
+  let stripped = name.replace(/\s/g, '');
+  const notification = document.querySelector('#notifications' + stripped);
+  notification.style.display = "none";
+  notification.innerHTML = 0;
   getChannel(name);
   // highlight and set channel name to selected channel
   document.querySelectorAll('.channel').forEach(channel => {
