@@ -29,6 +29,8 @@ channels = [
     }
 ]
 names = []
+# message limit on channels
+limit = 6
 
 
 @app.route("/")
@@ -122,6 +124,8 @@ def broadcastMessage(data):
     for channel in channels:
         for key, value in channel.items():
             if key == channelName:
+                if len(channel[key]) == limit:
+                    channel[key].pop(0)
                 value.append({"name": name, "time": timeStamp, "msg": message})
 
-    emit("announce message", {"message": message, "name": name, "timeStamp": timeStamp}, broadcast=True)
+    emit("announce message", {"message": message, "name": name, "timeStamp": timeStamp, "channel": channelName}, broadcast=True)

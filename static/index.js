@@ -1,5 +1,7 @@
 // Handlebars templates
-const channelTemplate = Handlebars.compile("<div class='channel' onclick=channelClicked(this);><div class='channelName'>{{ channel }}</div></div>");
+const channelTemplate = Handlebars.compile('<div class="channel" onclick=channelClicked(this);>' +
+                                            '<div class="messageNotification"></div>' +
+                                            '<div id="{{ channelId }}" class="channelName">{{ channel }}</div></div>');
 const yourMessageTemplate = Handlebars.compile( '<div class="messageDetails yourMessageDetails">' +
                                                   '<div class="messageName">{{ name }}</div><div class="messageTime">{{ time }}</div>' +
                                                 '</div>' +
@@ -12,6 +14,8 @@ const messageTemplate = Handlebars.compile( '<div class="messageDetails">' +
                                                 '<div class="messageBubbleContainer">' +
                                                   '<div class="messageBubble">{{ message }}</div>' +
                                                 '</div>');
+
+let messages = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -28,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // highlight and set channel name to recent channel
       document.querySelectorAll('.channel').forEach(channel => {
         channel.style.background = "";
-        if(channel.firstChild.innerHTML === recentChannel) {
+        if(channel.querySelector('.channelName').innerHTML === recentChannel) {
           channel.style.background = "#6dffc7";
           document.getElementById("channelName").innerHTML = recentChannel;
           document.querySelector('body').style.background = colour();
@@ -116,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Send message
-    document.querySelector('#messageForm').onsubmit= () => {
+    document.querySelector('#messageForm').onsubmit = () => {
         if (/\S/.test(document.querySelector('#messageInput').value) === false) {
           return false;
         }
@@ -139,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on("announce channel", data => {
       console.log("incomming channel");
       // Create new channel with Handelbars
-      const channel = channelTemplate({'channel': data.channel});
+      const channel = channelTemplate({'channelId': "id" + data.channel + "Notification",'channel': data.channel});
       const channelList = document.querySelector('.channels').innerHTML;
       document.querySelector('.channels').innerHTML = channel + channelList;
   });
@@ -147,16 +151,30 @@ document.addEventListener('DOMContentLoaded', () => {
   // Receive message
   socket.on('announce message', data => {
     console.log("incomming message");
+    messages ++;
     const message = document.createElement('div');
     message.className = "message";
-    if (data.name === localStorage.getItem("displayName")) {
-      message.innerHTML = yourMessageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
+    const channel = data.channel;
+    const currentChannel = localStorage.getItem("currentChannel");
+    console.log("before cuirrentchannel checked");
+    console.log(channel);
+    console.log(currentChannel);
+    if (currentChannel === channel) {
+      console.log("after, true");
+      if (data.name === localStorage.getItem("displayName")) {
+        message.innerHTML = yourMessageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
+      }
+      else {
+        message.innerHTML = messageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
+      }
+      document.querySelector('#chat').append(message);
     }
     else {
-      message.innerHTML = messageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
+      console.log("after false");
+      const notification = document.querySelector('#' + currentChannel + "Notification");
+      notification.style.display = "flex";
+      notification.innerHTML ++;
     }
-    console.log(message);
-    document.querySelector('#chat').append(message);
   });
 
 });
@@ -164,7 +182,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // Actions when channel is clicked
 function channelClicked(channel) {
   // get clicked channel name
-  let name = channel.firstChild.innerHTML;
+  let name = channel.querySelector('.channelName').innerHTML;
+  const notification = document.querySelector('#' + name + "Notification");
+  notification.style.display = "none";
+  notification.innerHTML === 0;
   console.log(name);
   getChannel(name);
   // highlight and set channel name to selected channel

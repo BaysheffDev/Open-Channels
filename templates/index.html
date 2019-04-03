@@ -47,7 +47,7 @@
 
         <div class="channels">
           {% for channel in channels %}
-            <div class="channel" onclick=channelClicked(this);><div class="channelName">{{ channel }}</div></div>
+            <div class="channel" onclick=channelClicked(this);><div id="{{ channel }}Notification" class="messageNotification"></div><div class="channelName">{{ channel }}</div></div>
           {% endfor %}
         </div>
 
