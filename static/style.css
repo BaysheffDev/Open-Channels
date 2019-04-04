@@ -123,8 +123,9 @@ input:focus, button:focus {
 
 .channel {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  height: 50px;
+  height: 45px;
   color: #ffffff;
   cursor: pointer;
   margin: 5px;
@@ -141,6 +142,12 @@ input:focus, button:focus {
 .channelName {
   font-weight: bold;
   font-size: 1.2em;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translateY(-17px);
 }
 
 .sideBarFooter {
@@ -200,7 +207,6 @@ input:focus, button:focus {
   justify-content: center;
   color: white;
   border: 2px solid #6dffc7;
-  font-size: 0.8em;
   box-shadow: 6px 6px 10px 0px grey;
 }
 
@@ -297,14 +303,15 @@ input:focus, button:focus {
     background: red;
     width: 17px;
     height: 17px;
-    display: none;
+    visibility: hidden;
+    display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50px;
     box-shadow: -1px 2px 2px #6d6d6d;
-    position: absolute;
-    right: 0px;
-    transform: translateY(-25px);
+    position: relative;
+    left: 100px;
+    transform: translate(16px, -10px);
     font-weight: bold;
     font-size: 0.8em;
 }

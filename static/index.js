@@ -2,20 +2,26 @@
 const channelTemplate = Handlebars.compile('<div class="channel" onclick=channelClicked(this);>' +
                                             '<div id="notifications{{ channelId }}" class="messageNotification"></div>' +
                                             '<div class="channelName">{{ channel }}</div></div>');
-const yourMessageTemplate = Handlebars.compile( '<div class="messageDetails yourMessageDetails">' +
-                                                  '<div class="messageName">{{ name }}</div><div class="messageTime">{{ time }}</div>' +
-                                                '</div>' +
-                                                '<div class="messageBubbleContainer yourMessage">' +
-                                                  '<div class="messageBubble">{{ message }}</div>' +
-                                                '</div>');
-const messageTemplate = Handlebars.compile( '<div class="messageDetails">' +
-                                                  '<div class="messageName">{{ name }}</div><div class="messageTime">{{ time }}</div>' +
-                                                '</div>' +
-                                                '<div class="messageBubbleContainer">' +
-                                                  '<div class="messageBubble">{{ message }}</div>' +
+const yourMessageTemplate = Handlebars.compile( '<div class="message">' +
+                                                  '<div class="messageDetails yourMessageDetails">' +
+                                                    '<div class="messageName">{{ name }}</div><div class="messageTime">{{ time }}</div>' +
+                                                  '</div>' +
+                                                    '<div class="messageBubbleContainer yourMessage">' +
+                                                    '<div class="messageBubble">{{ message }}</div>' +
+                                                  '</div>' +
                                                 '</div>');
 
-let messages = 0;
+const messageTemplate = Handlebars.compile( '<div class="message">' +
+                                              '<div class="messageDetails">' +
+                                                '<div class="messageName">{{ name }}</div><div class="messageTime">{{ time }}</div>' +
+                                              '</div>' +
+                                              '<div class="messageBubbleContainer">' +
+                                                '<div class="messageBubble" style="box-shadow: inset 0px -3px 10px 5px {{ colour }};">{{ message }}</div>' +
+                                              '</div>' +
+                                            '</div>');
+const limit = 10;
+var channelMessages = {};
+var users = {};
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -86,7 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       console.log("channel submitted");
       document.querySelector('#newChannelButton').style.background = colour();
-      const name = document.getElementById("newChannelInput").value;
+      let strip = document.getElementById("newChannelInput").value;
+      let trim = strip.trim();
+      const name = trim.replace(/\s\s+/g, " ");
       document.querySelector('#newChannelInput').value = "";
       const request = new XMLHttpRequest();
       request.open('POST', '/newChannel');
@@ -143,9 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on("announce channel", data => {
       console.log("incomming channel");
       const name = data.channel;
-      const stripped = name.replace(/\s/g, '');
+      const id = name.replace(/\s/g, '-');
       // Create new channel with Handelbars
-      const channel = channelTemplate({'channelId': stripped,'channel': data.channel});
+      const channel = channelTemplate({'channelId': id,'channel': data.channel});
       const channelList = document.querySelector('.channels').innerHTML;
       document.querySelector('.channels').innerHTML = channel + channelList;
   });
@@ -153,9 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Receive message
   socket.on('announce message', data => {
     console.log("incomming message");
-    messages ++;
-    const message = document.createElement('div');
-    message.className = "message";
     const channel = data.channel;
     const currentChannel = localStorage.getItem("currentChannel");
     console.log("before cuirrentchannel checked");
@@ -163,19 +168,39 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log(currentChannel);
     if (currentChannel === channel) {
       console.log("after, true");
+      // Get chat
+      const chatBox = document.querySelector('#chat');
       if (data.name === localStorage.getItem("displayName")) {
-        message.innerHTML = yourMessageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
+        chatBox.innerHTML += yourMessageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
       }
       else {
-        message.innerHTML = messageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
+        chatBox.innerHTML += messageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
       }
-      document.querySelector('#chat').append(message);
+      // Stay scrolled to bottom
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Remove first message if "limit" messages in chat
+      if (channelMessages[channel] === limit) {
+        let msg = document.getElementById('chat');
+        msg.removeChild(msg.children[0]);
+        console.log("removed message?");
+        console.log(msg.children[0].innerHTML);
+        channelMessages[channel] --;
+        console.log(channelMessages[channel]);
+      }
+      channelMessages[channel] ++;
+      console.log(channelMessages[channel]);
     }
     else {
       console.log("after false");
-      const notification = document.querySelector('#notifications' + currentChannel);
-      notification.style.display = "flex";
-      notification.innerHTML ++;
+      const notification = document.querySelector('#notifications' + channel);
+      notification.style.visibility = "visible";
+      if (notification.innerHTML !== limit.toString()) {
+        console.log(notification.innerHTML);
+        notification.innerHTML ++;
+        console.log(notification.innerHTML);
+      }
+      console.log(limit);
     }
   });
 
@@ -186,9 +211,9 @@ function channelClicked(channel) {
   // get clicked channel name
   let name = channel.querySelector('.channelName').innerHTML;
   console.log(name);
-  let stripped = name.replace(/\s/g, '');
+  let stripped = name.replace(/\s/g, '-');
   const notification = document.querySelector('#notifications' + stripped);
-  notification.style.display = "none";
+  notification.style.visibility = "hidden";
   notification.innerHTML = 0;
   getChannel(name);
   // highlight and set channel name to selected channel
@@ -213,10 +238,14 @@ function getChannel(channelName) {
     console.log("channel clicked and response loaded");
     if (data.success) {
       chatBox.innerHTML = "This is the beginning of the (" + name + ") channel!";
+
       // If channel has pre exisitng messages, display those
       if (data.messages) {
-        for (let i = 0, len = data.chat.length; i < len; i++) {
-          console.log("chat length: " + data.chat.length);
+        let len = data.chat.length
+        channelMessages[name] = len;
+        console.log(channelMessages[name]);
+        console.log("chat length: " + data.chat.length);
+        for (let i = 0; i < len; i++) {
           if (data.chat[i].name === localStorage.getItem("displayName")) {
             console.log(data.chat[i].name);
             console.log(data.chat[i].time);
@@ -224,11 +253,17 @@ function getChannel(channelName) {
             chatBox.innerHTML += yourMessageTemplate({"name": data.chat[i].name, "time": data.chat[i].time, "message": data.chat[i].msg});
           }
           else {
-            chatBox.innerHTML += messageTemplate({"name": data.chat[i].name, "time": data.chat[i].time, "message": data.chat[i].msg});
+            let msgColour = "";
+            if (!users[data.chat[0].name]) {
+              users[data.chat[0].name] = messageColour();
+            }
+            msgColour = users[data.chat[0].name];
+            chatBox.innerHTML += messageTemplate({"name": data.chat[i].name, "time": data.chat[i].time, "message": data.chat[i].msg, "colour": msgColour});
           }
         }
       }
       else {
+        channelMessages[name] = 0;
         chatBox.innerHTML = "This is the beginning of the (" + name + ") channel!";
       }
       // Scroll to bottom of chat
@@ -263,7 +298,7 @@ function colour() {
 }
 
 // Generate random colour at particular brightness level
-function messageColour () {
+function messageColour() {
   let rgb = [0,0,0];
   let brightness = 150;
   let a = Math.floor(Math.random() * 3);

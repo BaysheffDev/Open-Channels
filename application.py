@@ -30,7 +30,7 @@ channels = [
 ]
 names = []
 # message limit on channels
-limit = 6
+limit = 5
 
 
 @app.route("/")
