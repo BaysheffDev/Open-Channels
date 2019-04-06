@@ -9,11 +9,11 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
 channels = [
-    {"Power Channel" : [
+    {"OpenChannels" : [
             {
             "name": "BaysheffDev",
               "time": "17:30 02/04/2019",
-              "msg": "Hi, welcome to Power Channel."
+              "msg": "Hi, welcome to OpenChannel."
             },
             {
             "name": "BaysheffDev",
@@ -28,10 +28,10 @@ channels = [
         ]
     }
 ]
+# List of display names
 names = []
 # message limit on channels
-limit = 5
-
+limit = 100
 
 @app.route("/")
 def index():
