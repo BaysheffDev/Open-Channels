@@ -93,7 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       document.querySelector('#newChannelButton').style.background = colour();
       const trim = name.trim();
-      const stripped = trim.replace(/\s\s+/g, " ");
+      const remove = trim.replace(/[^\w\s/]/gi, '');
+      const stripped = remove.replace(/\s\s+/g, " ");
       const request = new XMLHttpRequest();
       request.open('POST', '/newChannel');
       request.onload = () => {
@@ -129,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return false;
         }
         const channel = document.querySelector('#channelName').innerHTML;
-        if (channel === "OpenChannels") {
+        if (channel === "OpenChannels" || channel === "") {
           return false;
         }
         const message = document.querySelector('#messageInput').value;
@@ -174,7 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
       channelMessages[channel] ++;
     }
     else {
-      const notification = document.querySelector('#notifications' + channel);
+      const id = channel.replace(/\s/g, '-');
+      const notification = document.querySelector('#notifications' + id);
       notification.style.visibility = "visible";
       notification.style.transform = "translate(16px, -16px)";
       setTimeout(function() {
@@ -217,7 +219,7 @@ function getChannel(channelName) {
   const name = channelName;
   localStorage.setItem("currentChannel", name);
   const request = new XMLHttpRequest();
-  request.open('GET', `/channel/${name}`);
+  request.open('GET', /channel/${name});
   request.onload = () => {
     const data = JSON.parse(request.responseText);
     // get chat
