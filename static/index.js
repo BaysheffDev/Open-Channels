@@ -219,7 +219,7 @@ function getChannel(channelName) {
   const name = channelName;
   localStorage.setItem("currentChannel", name);
   const request = new XMLHttpRequest();
-  request.open('GET', /channel/${name});
+  request.open('GET', `/channel/${name}`);
   request.onload = () => {
     const data = JSON.parse(request.responseText);
     // get chat
