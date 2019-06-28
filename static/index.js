@@ -193,6 +193,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+
+  // Mobile menu toggles
+  document.querySelector('.mobileMenuToggle2').onclick = () => {
+    document.querySelector('.sideBar').style.left = "0px";
+    document.querySelector('.sidebarOverlay').style.display = "block";
+  }
+  document.querySelector('.mobileMenuToggle').onclick = () => {
+    document.querySelector('.sideBar').style.left = "-250px";
+    document.querySelector('.sidebarOverlay').style.display = "none";
+  }
+  document.querySelector('.sidebarOverlay').onclick = () => {
+    document.querySelector('.sideBar').style.left = "-250px";
+    document.querySelector('.sidebarOverlay').style.display = "none";
+  }
+
 });
 
 // Actions when channel is clicked

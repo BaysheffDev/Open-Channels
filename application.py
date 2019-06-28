@@ -12,18 +12,23 @@ channels = [
     {"OpenChannels" : [
             {
             "name": "BaysheffDev",
-              "time": "17:30 02/04/2019",
-              "msg": "Hi, welcome to OpenChannel."
+              "time": "17:30 02/06/2019",
+              "msg": "Hi, welcome to OpenChannels."
             },
             {
             "name": "BaysheffDev",
-              "time": "17:30 02/04/2019",
-              "msg": "Create your own open channels to chat in, or chat in any channel of your choosing",
+              "time": "17:30 02/06/2019",
+              "msg": "Create your own open channels in the side chat to chat in, or chat in any channel of your choosing.",
             },
             {
               "name": "BaysheffDev",
-              "time": "17:30 02/04/2019",
-              "msg": "I built this over a weekend so don't try too hard to break my shit. Enjoy!",
+              "time": "17:30 02/06/2019",
+              "msg": "You will get notifications when new messages appear in your side menu channels. You can't type in this channel, head over to the side menu.",
+            },
+             {
+              "name": "BaysheffDev",
+              "time": "17:30 02/06/2019",
+              "msg": "Your messages and channels won't be permanently stored, so go nuts. Enjoy!",
             }
         ]
     }
