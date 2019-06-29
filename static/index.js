@@ -162,7 +162,12 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBox.innerHTML += yourMessageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
       }
       else {
-        chatBox.innerHTML += messageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message});
+        let msgColour = "";
+          if (!users[data.name]) {
+            users[data.name] = colour();
+          }
+        msgColour = users[data.name];
+        chatBox.innerHTML += messageTemplate({"name": data.name, "time": data.timeStamp, "message": data.message, "color": msgColour});
       }
       // Stay scrolled to bottom
       chatBox.scrollTop = chatBox.scrollHeight;
@@ -227,6 +232,12 @@ function channelClicked(channel) {
   document.getElementById("channelName").innerHTML = name;
   document.querySelector('body').style.background = colour();
   document.querySelector('#messageInput').focus();
+
+  // Close side menu if on mobile
+  if (screen.width < 768) {
+    document.querySelector('.sideBar').style.left = "-250px";
+    document.querySelector('.sidebarOverlay').style.display = "none";
+  }
 }
 
 // Get channel
